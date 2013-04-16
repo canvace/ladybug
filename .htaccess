@@ -1,0 +1,18 @@
+Options -Indexes
+AddDefaultCharset utf-8
+AddType application/x-web-app-manifest+json .webapp
+
+<IfModule mod_mime.c>
+	AddCharset utf-8 .htm
+	AddCharset utf-8 .html
+	AddCharset utf-8 .css
+	AddCharset utf-8 .js
+	AddCharset utf-8 .json
+</IfModule>
+
+<LimitExcept GET HEAD>
+	Order Deny,Allow
+	Deny from All
+</LimitExcept>
+
+Redirect /kongregate.php http://ladybug.canvace.com/

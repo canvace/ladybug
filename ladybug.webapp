@@ -1,0 +1,14 @@
+{
+	"name": "Ladybug",
+	"description": "No badass spider is gonna mess up with Ladybug. Ladybug is the first game based on the Canvace technology. What’s so special? It is not made in Flash nor Java, pure HTML5 and a few lines of JavaScript code. If you develop browser games and you like Ladybug you should definitely take a look at Canvace!",
+	"fullscreen": "true",
+	"orientation": "landscape",
+	"icons": {
+		"128": "/images/icons/firefox-128.png"
+	},
+	"developer": {
+		"name": "Canvace",
+		"url": "http://www.canvace.com/"
+	},
+	"default_locale": "en"
+}

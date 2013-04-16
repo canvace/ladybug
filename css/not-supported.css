@@ -1,0 +1,37 @@
+#not-supported {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -300px 0px 0px -400px;
+
+  display: table-cell;
+  border: 1px solid black;
+  background: url(../images/grass.png) repeat-x bottom center #58c7f3;
+  font-family: sans-serif;
+  font-size: 18pt;
+  vertical-align: middle;
+  width: 800px;
+  height: 600px;
+}
+
+#not-supported > div {
+  margin: 100px 0px 100px 0px;
+  padding: 50px;
+  background-color: rgba(0, 0, 0, .5);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#af000000', endColorstr='#af000000');
+}
+
+#not-supported > div,
+#not-supported > div > a {
+  color: white;
+}
+
+#not-supported > div > a {
+  display: block;
+  font-weight: bold;
+  text-align: center;
+}
+
+#not-supported > div > h1 {
+  margin-top: 0px;
+}

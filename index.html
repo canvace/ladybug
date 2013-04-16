@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ladybug</title>
+
+  <meta property="og:title" content="Ladybug" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="http://ladybug.canvace.com/icon.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:url" content="http://ladybug.canvace.com/" />
+  <meta property="og:description" content="Play the Ladybug game!" />
+  <meta property="og:site_name" content="Canvace" />
+
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="apple/touch-icon-iphone.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="apple/touch-icon-ipad.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="apple/touch-icon-iphone4.png" />
+
+  <link rel="icon" type="image/vnd.microsoft.icon" href="favicon.ico" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <link rel="stylesheet" href="css/screen.css" media="screen" />
+  <link rel="stylesheet" href="css/mobile.css" media="screen" />
+  <link rel="stylesheet" href="css/not-supported.css" media="screen" />
+
+  <script src="js/canvace.js"></script>
+  <script src="js/ladybug.js"></script>
+  <script src="js/onecouponatime.js"></script>
+
+  <script type="text/javascript">
+  <!--//--><![CDATA[//><!--
+  var _gaq = _gaq || [];_gaq.push(["_setAccount", "UA-29915000-1"]);_gaq.push(["_trackPageview"]);(function() {var ga = document.createElement("script");ga.type = "text/javascript";ga.async = true;ga.src = ("https:" == document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga.js";var s = document.getElementsByTagName("script")[0];s.parentNode.insertBefore(ga, s);})();
+  //--><!]]>
+  </script>
+
+  <script>
+  var initializeGame = function (canvas) {
+    var ladybug = null;
+    var playing = false;
+
+    var loadCover = document.getElementById("load-cover");
+    loadCover.setAttribute("class", "cover");
+    canvas.removeAttribute("class");
+
+    if (Canvace.mobileBrowser) {
+      document.body.setAttribute("class", "mobile");
+      
+      (function () {
+        var screenWidth = Math.max(window.screen.availWidth, window.screen.availHeight);
+        var screenHeight = Math.min(window.screen.availWidth, window.screen.availHeight);
+        var screenRatio = (screenHeight / screenWidth);
+
+        var targetWidth = Math.max(window.innerWidth, window.innerHeight);
+        canvas.setAttribute("width", targetWidth);
+        canvas.setAttribute("height", ~~(screenRatio * targetWidth));
+      }());
+
+      var pleaseRotate = document.getElementById("please-rotate");
+      var onOrientationChange = function (landscape) {
+        if (landscape) {
+          if (playing && !!ladybug) {
+            setTimeout(ladybug.play, 0);
+          }
+          pleaseRotate.setAttribute("class", "cover hidden");
+        } else {
+          if (playing && !!ladybug) {
+            ladybug.pause();
+          }
+          pleaseRotate.setAttribute("class", "cover")
+        }
+        window.scrollTo(0, 1);
+      };
+
+      if (typeof window.orientation !== "undefined") {
+        window.addEventListener("orientationchange", function () {
+          onOrientationChange(Math.abs(window.orientation) == 90);
+        }, false);
+        onOrientationChange(Math.abs(window.orientation) == 90);
+      } else {
+        window.addEventListener("resize", function () {
+          onOrientationChange(window.innerWidth >= window.innerHeight);
+        }, false);
+        onOrientationChange(window.innerWidth >= window.innerHeight);
+      }
+    }
+
+    (function (elements) {
+      var nullHandler = function (event) {
+        event.preventDefault();
+        return false;
+      };
+
+      var eventList = ["contextmenu", "gesturestart", "gesturechange", "gestureend"];
+
+      for (var i = 0; i < elements.length; ++i) {
+        for (var j in eventList) {
+          document.body.addEventListener(eventList[j], nullHandler, false);
+        }
+      }
+    }(document.querySelectorAll("body, canvas, .cover, .button, .menu-button")));
+
+    Canvace.Ajax.getJSON("level1.json", function (gameLevel) {
+      var loadGauge = document.getElementById("load-gauge");
+
+      var loader = new Canvace.Loader({
+        basePath: "media",
+
+        progress: function (percentage) {
+          loadGauge.style["backgroundSize"] = ~~(percentage * 272.0 / 100.0) + "px 100%, 100% 100%";
+        },
+
+        error: function () {
+          alert("Load error!");
+        },
+
+        complete: function () {
+          ladybug = new Ladybug(loader, gameLevel);
+
+          var playButton = document.getElementById("play-button");
+          playButton.addEventListener("click", function () {
+            document.getElementById("hud").style["visibility"] = "visible";
+            document.getElementById("life-gauge").style["display"] = "block";
+            loadCover.setAttribute("class", "cover hidden");
+
+            playing = true;
+            ladybug.play();
+            onecatAPI.start();
+          }, false);
+          loadGauge.style["visibility"] = "hidden";
+          playButton.setAttribute("class", "menu-button visible");
+
+          Canvace.onVisibilityChange(function (hidden) {
+            if (playing) {
+              if (hidden) {
+                ladybug.pause();
+                onecatAPI.sleep(ladybug.score);
+              } else {
+                ladybug.play();
+                onecatAPI.awake();
+              }
+            }
+          });
+
+          window.setInterval(function () {
+            if (playing) {
+              onecatAPI.ping(ladybug.score);
+            }
+          }, 30000);
+        }
+      });
+
+      loader.loadAssets(gameLevel, Ladybug.soundAssets);
+    });
+
+    var popup = document.querySelector("a[data-popup]");
+    popup.addEventListener("click", function (event) {
+      window.open(popup.getAttribute("href"));
+      event.preventDefault();
+      return false;
+    });
+  };
+
+  if (typeof window.addEventListener === "function") {
+    window.addEventListener("load", function () {
+      var canvas = document.getElementById("canvas");
+      if (typeof canvas.getContext === "function") {
+        initializeGame(canvas);
+      }
+    }, false);
+  }
+  </script>
+</head>
+
+<body>
+  <div id="fb-root"></div>
+  <script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=270237363089920";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));</script>
+
+  <canvas id="canvas" class="hidden" width="800" height="600">
+    <div id="not-supported"><div>
+      <h1>Ouch!</h1>
+      <p>It seems like your browser doesn't support the HTML5 canvas, which is required to play Ladybug.</p>
+      <p>Please choose a browser that supports it from:</p>
+      <a href="http://browsehappy.com/" target="_blank">http://browsehappy.com/</a>
+    </div></div>
+  </canvas>
+
+  <div id="load-cover" class="cover hidden">
+    <div id="load-gauge" class="gauge"></div>
+    <button id="play-button" class="menu-button hidden">
+      <img src="images/buttons/play.png" alt="Play Ladybug!" />
+    </button>
+  </div>
+
+  <div id="please-rotate" class="cover hidden"></div>
+
+  <div id="level-cleared" class="cover hidden">
+    <button class="menu-button play-again" onclick="window.location.reload();">
+      <img src="images/buttons/again.png" alt="Play again!" />
+    </button>
+  </div>
+
+  <div id="game-over" class="cover hidden">
+    <button class="menu-button play-again" onclick="window.location.reload();">
+      <img src="images/buttons/again.png" alt="Play again!" />
+    </button>
+  </div>
+
+  <div id="buttons">
+    <img id="left"  class="button" src="images/controls/left.png" alt=""
+         data-start-action="startLeft"
+         data-stop-action="stopLeft" />
+    <img id="right" class="button" src="images/controls/right.png" alt=""
+         data-start-action="startRight"
+         data-stop-action="stopRight" />
+    <img id="jump"  class="button" src="images/controls/jump.png" alt=""
+         data-start-action="startJump"
+         data-stop-action="stopJump" />
+    <img id="fire"  class="button" src="images/controls/fire.png" alt=""
+         data-start-action="fire"
+         data-stop-action="foo" />
+  </div>
+
+  <div id="life-gauge" class="gauge">
+    <img id="leaf" src="images/leaf.png" />
+  </div>
+
+  <table id="hud">
+    <tr>
+      <td><img src="images/hud/spider.png" /></td>
+      <td id="score">0</td>
+    </tr>
+  </table>
+
+  <div id="social-box">
+    <div class="fb-like" data-href="http://ladybug.canvace.com/" data-send="true" data-layout="box_count" data-width="450" data-show-faces="true"></div>
+    <br />
+    <a href="http://www.canvace.com/" data-popup="true"><img src="images/powered.png" alt="Powered by Canvace" /></a>
+  </div>
+</body>
+</html>
