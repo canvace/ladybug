@@ -1,8 +1,6 @@
 var Ladybug = function (loader, response) {
 	var thisObject = this;
 
-	Canvace.Buckets.setBucketSizeFactors(2, 2);
-
 	var canvas = document.getElementById("canvas");
 	var stage = new Canvace.Stage(response, canvas);
 	var view = new stage.getView();
