@@ -450,8 +450,8 @@ var Ladybug = function (loader, response) {
 		uniformVelocity.i = -2;
 		var removeSpider = spiders.add({
 			tick: function () {
-				if (spider.tileCollision(function (walkable, properties) {
-					return !walkable || properties.blockSpiders;
+				if (spider.tileCollision(function (solid, properties) {
+					return solid || properties.blockSpiders;
 				}).i) {
 					uniformVelocity.i = -uniformVelocity.i;
 				}
@@ -500,11 +500,11 @@ var Ladybug = function (loader, response) {
 			}
 		});
 		var win = false;
-		if (character.tileCollision(function (walkable, properties) {
+		if (character.tileCollision(function (solid, properties) {
 			if (properties.win) {
 				win = true;
 			}
-			return !walkable;
+			return solid;
 		}).j < 0) {
 			states.land();
 		}
